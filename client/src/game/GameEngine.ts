@@ -22,14 +22,17 @@ export interface Enemy {
 
 export interface GameEngineState {
   enemies: Enemy[]
-  playerInput: string
+  targetedEnemyId: string | null
+  typedLetters: string // Letters typed so far for the targeted enemy
   gameState: GameState
   score: number
+  isShaking: boolean // Visual shake effect for wrong letter
 }
 
 export const GAME_WIDTH = 800
 export const GAME_HEIGHT = 600
 export const ENEMY_SPAWN_INTERVAL = 2000 // 2 seconds
+export const SHAKE_DURATION = 150 // milliseconds
 const BASE_SPEED = 0.03 // pixels per millisecond
 const SPEED_VARIANCE = 0.02
 
@@ -54,9 +57,11 @@ function getRandomSpeed(): number {
 export function createInitialState(): GameEngineState {
   return {
     enemies: [],
-    playerInput: '',
+    targetedEnemyId: null,
+    typedLetters: '',
     gameState: 'idle',
-    score: 0
+    score: 0,
+    isShaking: false
   }
 }
 
@@ -77,20 +82,30 @@ export function spawnEnemy(state: GameEngineState): GameEngineState {
 
 export function updateEnemies(state: GameEngineState, deltaTime: number): GameEngineState {
   let gameOver = false
+  let targetedEnemyId = state.targetedEnemyId
 
-  const updatedEnemies = state.enemies.map(enemy => {
-    const newY = enemy.y + enemy.speed * deltaTime
-    
-    // Check if enemy hit the bottom
-    if (newY > GAME_HEIGHT) {
-      gameOver = true
-    }
+  const updatedEnemies = state.enemies
+    .map(enemy => {
+      const newY = enemy.y + enemy.speed * deltaTime
+      
+      // Check if enemy hit the bottom
+      if (newY > GAME_HEIGHT) {
+        gameOver = true
+      }
 
-    return {
-      ...enemy,
-      y: newY
-    }
-  })
+      return {
+        ...enemy,
+        y: newY
+      }
+    })
+    .filter(enemy => {
+      // Remove enemies that went off screen
+      const isOffScreen = enemy.y > GAME_HEIGHT + 50
+      if (isOffScreen && enemy.id === targetedEnemyId) {
+        targetedEnemyId = null
+      }
+      return !isOffScreen
+    })
 
   if (gameOver) {
     return {
@@ -102,46 +117,138 @@ export function updateEnemies(state: GameEngineState, deltaTime: number): GameEn
 
   return {
     ...state,
-    enemies: updatedEnemies
+    enemies: updatedEnemies,
+    targetedEnemyId
   }
 }
 
-export function setPlayerInput(state: GameEngineState, input: string): GameEngineState {
-  return {
-    ...state,
-    playerInput: input.toLowerCase()
-  }
+export interface KeyPressResult {
+  state: GameEngineState
+  wasCorrect: boolean
+  wordCompleted: boolean
 }
 
-export function checkWordMatch(state: GameEngineState): GameEngineState {
-  const input = state.playerInput.trim().toLowerCase()
+export function handleKeyPress(state: GameEngineState, key: string): KeyPressResult {
+  // Only handle single letters
+  if (key.length !== 1 || !/^[a-zA-Z]$/.test(key)) {
+    return { state, wasCorrect: false, wordCompleted: false }
+  }
+
+  const letter = key.toLowerCase()
+
+  // If no enemy is targeted, try to find one that starts with this letter
+  if (state.targetedEnemyId === null) {
+    const matchingEnemy = state.enemies.find(
+      enemy => enemy.word.toLowerCase().startsWith(letter)
+    )
+
+    if (matchingEnemy) {
+      // Check if this completes a single-letter word
+      if (matchingEnemy.word.length === 1) {
+        const scoreIncrease = matchingEnemy.word.length * 10
+        return {
+          state: {
+            ...state,
+            enemies: state.enemies.filter(e => e.id !== matchingEnemy.id),
+            targetedEnemyId: null,
+            typedLetters: '',
+            score: state.score + scoreIncrease,
+            isShaking: false
+          },
+          wasCorrect: true,
+          wordCompleted: true
+        }
+      }
+
+      // Target this enemy
+      return {
+        state: {
+          ...state,
+          targetedEnemyId: matchingEnemy.id,
+          typedLetters: letter,
+          isShaking: false
+        },
+        wasCorrect: true,
+        wordCompleted: false
+      }
+    }
+
+    // No matching enemy found - wrong letter
+    return {
+      state: { ...state, isShaking: true },
+      wasCorrect: false,
+      wordCompleted: false
+    }
+  }
+
+  // An enemy is already targeted - check if the next letter matches
+  const targetedEnemy = state.enemies.find(e => e.id === state.targetedEnemyId)
   
-  if (!input) {
-    return state
+  if (!targetedEnemy) {
+    // Targeted enemy no longer exists, reset targeting
+    return {
+      state: {
+        ...state,
+        targetedEnemyId: null,
+        typedLetters: '',
+        isShaking: false
+      },
+      wasCorrect: false,
+      wordCompleted: false
+    }
   }
 
-  // Find enemy with matching word
-  const matchIndex = state.enemies.findIndex(
-    enemy => enemy.word.toLowerCase() === input
-  )
+  const nextLetterIndex = state.typedLetters.length
+  const expectedLetter = targetedEnemy.word.toLowerCase()[nextLetterIndex]
 
-  if (matchIndex === -1) {
-    return state
+  if (letter === expectedLetter) {
+    const newTypedLetters = state.typedLetters + letter
+
+    // Check if word is fully typed
+    if (newTypedLetters.length === targetedEnemy.word.length) {
+      const scoreIncrease = targetedEnemy.word.length * 10
+      return {
+        state: {
+          ...state,
+          enemies: state.enemies.filter(e => e.id !== targetedEnemy.id),
+          targetedEnemyId: null,
+          typedLetters: '',
+          score: state.score + scoreIncrease,
+          isShaking: false
+        },
+        wasCorrect: true,
+        wordCompleted: true
+      }
+    }
+
+    // Word not complete yet
+    return {
+      state: {
+        ...state,
+        typedLetters: newTypedLetters,
+        isShaking: false
+      },
+      wasCorrect: true,
+      wordCompleted: false
+    }
   }
 
-  // Remove the matched enemy and increase score
-  const matchedEnemy = state.enemies[matchIndex]
-  const scoreIncrease = matchedEnemy.word.length * 10
-
+  // Wrong letter - trigger shake
   return {
-    ...state,
-    enemies: state.enemies.filter((_, index) => index !== matchIndex),
-    playerInput: '',
-    score: state.score + scoreIncrease
+    state: { ...state, isShaking: true },
+    wasCorrect: false,
+    wordCompleted: false
   }
 }
 
-export function startGame(state: GameEngineState): GameEngineState {
+export function clearShake(state: GameEngineState): GameEngineState {
+  return {
+    ...state,
+    isShaking: false
+  }
+}
+
+export function startGame(_state: GameEngineState): GameEngineState {
   return {
     ...createInitialState(),
     gameState: 'playing'
@@ -158,4 +265,3 @@ export function endGame(state: GameEngineState): GameEngineState {
 export function resetGame(): GameEngineState {
   return createInitialState()
 }
-
