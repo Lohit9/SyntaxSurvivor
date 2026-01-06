@@ -33,8 +33,8 @@ export const GAME_WIDTH = 800
 export const GAME_HEIGHT = 600
 export const ENEMY_SPAWN_INTERVAL = 2000 // 2 seconds
 export const SHAKE_DURATION = 150 // milliseconds
-const BASE_SPEED = 0.03 // pixels per millisecond
-const SPEED_VARIANCE = 0.02
+const BASE_SPEED = 0.08 // pixels per millisecond
+const SPEED_VARIANCE = 0.03
 
 function generateId(): string {
   return Math.random().toString(36).substring(2, 9)

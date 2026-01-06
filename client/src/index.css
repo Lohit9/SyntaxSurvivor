@@ -1,51 +1,117 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
 
-:root {
-  --bg-dark: #0a0a0f;
-  --bg-gradient: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
-  --accent-cyan: #00fff5;
-  --accent-magenta: #ff00ff;
-  --accent-yellow: #ffd700;
-  --text-primary: #e0e0e0;
-  --text-secondary: #8892b0;
-  --card-bg: rgba(26, 26, 46, 0.8);
-  --glow-cyan: 0 0 20px rgba(0, 255, 245, 0.5);
-  --glow-magenta: 0 0 20px rgba(255, 0, 255, 0.5);
+@theme {
+  --font-display: 'Orbitron', monospace;
+  --font-body: 'Rajdhani', sans-serif;
+  
+  --color-cyber-dark: #0a0a0f;
+  --color-cyber-darker: #050508;
+  --color-cyber-purple: #1a1a2e;
+  --color-cyber-blue: #16213e;
+  --color-neon-cyan: #00fff5;
+  --color-neon-magenta: #ff00ff;
+  --color-neon-yellow: #ffd700;
+  --color-neon-green: #00ff88;
+  --color-neon-red: #ff3366;
+  --color-glass: rgba(26, 26, 46, 0.85);
+  --color-glass-light: rgba(255, 255, 255, 0.05);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer base {
+  @font-face {
+    font-family: 'Orbitron';
+    font-style: normal;
+    font-weight: 400 900;
+    font-display: swap;
+    src: url('https://fonts.gstatic.com/s/orbitron/v31/yMJMMIlzdpvBhQQL_SC3X9yhF25-T1nyKS6xpmIyXjU1pg.woff2') format('woff2');
+  }
+  
+  @font-face {
+    font-family: 'Rajdhani';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('https://fonts.gstatic.com/s/rajdhani/v15/LDI2apCSOBg7S-QT7pasEfOqeef9lQ.woff2') format('woff2');
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: linear-gradient(135deg, var(--color-cyber-dark) 0%, var(--color-cyber-purple) 50%, var(--color-cyber-blue) 100%);
+    min-height: 100vh;
+    color: #e0e0e0;
+    overflow: hidden;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
-body {
-  font-family: 'Rajdhani', sans-serif;
-  background: var(--bg-gradient);
-  min-height: 100vh;
-  color: var(--text-primary);
-  overflow-x: hidden;
+@layer components {
+  .glow-cyan {
+    box-shadow: 0 0 20px rgba(0, 255, 245, 0.5);
+  }
+  
+  .glow-magenta {
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+  }
+  
+  .text-glow-cyan {
+    text-shadow: 0 0 10px rgba(0, 255, 245, 0.8);
+  }
+  
+  .text-glow-green {
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+  }
+
+  .glass-panel {
+    background: var(--color-glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 255, 245, 0.2);
+  }
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(circle at 20% 80%, rgba(0, 255, 245, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.05) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: -1;
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
 }
 
-#root {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 2rem;
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
+@keyframes float-down {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-shake {
+  animation: shake 0.15s ease-in-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+.animate-float-down {
+  animation: float-down 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}

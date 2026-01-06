@@ -7,7 +7,6 @@ import {
   updateEnemies,
   handleKeyPress,
   clearShake,
-  startGame,
   resetGame,
   ENEMY_SPAWN_INTERVAL,
   SHAKE_DURATION
@@ -26,10 +25,15 @@ export function useGameEngine() {
     elapsedTimeRef.current += deltaTime
 
     setState(currentState => {
-      // Spawn enemy every ENEMY_SPAWN_INTERVAL ms
+      if (currentState.gameState !== 'playing') {
+        return currentState
+      }
+
       let newState = currentState
       
-      if (elapsedTimeRef.current - lastSpawnTimeRef.current >= ENEMY_SPAWN_INTERVAL) {
+      // Spawn enemy every ENEMY_SPAWN_INTERVAL ms
+      const timeSinceLastSpawn = elapsedTimeRef.current - lastSpawnTimeRef.current
+      if (timeSinceLastSpawn >= ENEMY_SPAWN_INTERVAL) {
         newState = spawnEnemy(newState)
         lastSpawnTimeRef.current = elapsedTimeRef.current
       }
@@ -43,14 +47,6 @@ export function useGameEngine() {
 
   // Use the game loop
   useGameLoop(update, isPlaying)
-
-  // Reset timers when game starts
-  useEffect(() => {
-    if (isPlaying) {
-      lastSpawnTimeRef.current = 0
-      elapsedTimeRef.current = 0
-    }
-  }, [isPlaying])
 
   // Clear shake timeout on cleanup
   useEffect(() => {
@@ -110,12 +106,25 @@ export function useGameEngine() {
     }
   }, [isPlaying, onKeyPress])
 
-  // Actions
+  // Start game action - spawn first enemy immediately
   const handleStartGame = useCallback(() => {
-    setState(startGame)
+    // Reset timers
+    lastSpawnTimeRef.current = 0
+    elapsedTimeRef.current = 0
+    
+    // Start game with first enemy already spawned
+    setState(() => {
+      const initialState = {
+        ...createInitialState(),
+        gameState: 'playing' as const
+      }
+      return spawnEnemy(initialState)
+    })
   }, [])
 
   const handleResetGame = useCallback(() => {
+    lastSpawnTimeRef.current = 0
+    elapsedTimeRef.current = 0
     setState(resetGame)
   }, [])
 
