@@ -2,7 +2,10 @@
 
 A fast-paced typing game where you defend against falling "bugs" by typing programming keywords before they reach the bottom. Built as a monorepo with React frontend and Express backend.
 
-![Game Screenshot](docs/gameplay.png)
+## Game Screenshot 
+
+<img width="372" height="531" alt="Screenshot 2026-01-06 at 6 58 24 PM" src="https://github.com/user-attachments/assets/a01f7c2e-87f0-4c97-8805-6d091029ead1" />
+
 
 ## 🎮 How to Play
 
