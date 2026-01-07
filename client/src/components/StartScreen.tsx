@@ -11,7 +11,7 @@ export function StartScreen({ onStart }: StartScreenProps) {
       <div className="absolute inset-0 bg-cyber-dark/90 backdrop-blur-sm" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center gap-8 p-8">
+      <div className="relative z-10 flex flex-col items-center gap-8 p-8 pt-16">
         {/* Title */}
         <div className="text-center">
           <h1 className="font-display text-6xl font-black tracking-wider mb-2">
