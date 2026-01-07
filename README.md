@@ -170,40 +170,12 @@ Missing audio/visual feedback:
 - Background music with intensity changes
 - Enemy destruction animations
 
-#### 6. **Production Database**
+#### 6. **Production Database **
 SQLite works for demos but for production:
 - PostgreSQL or MySQL for horizontal scaling
 - Connection pooling for concurrent users
 - Database migrations with version control
 - Proper indexing for leaderboard queries
-
-#### 7. **Testing**
-No automated tests currently. Would add:
-- Unit tests for game logic (Jest)
-- Component tests (React Testing Library)
-- E2E tests (Playwright)
-- API tests (Supertest)
-
-#### 8. **Deployment & DevOps**
-For production deployment:
-- Docker containerization
-- CI/CD pipeline (GitHub Actions)
-- Environment configuration (.env files)
-- Logging and monitoring (Sentry, DataDog)
-
-#### 9. **Accessibility**
-Current accessibility gaps:
-- Screen reader support for game state
-- Keyboard-only navigation
-- High contrast mode
-- Colorblind-friendly highlighting
-
-#### 10. **Mobile Support**
-Desktop-only currently. Mobile would need:
-- Touch-friendly virtual keyboard
-- Responsive canvas sizing
-- Mobile-optimized UI
-- Touch gesture support
 
 ## 📝 API Reference
 
@@ -249,11 +221,3 @@ Submit a new high score.
   "scores": [...]
 }
 ```
-
-## 📄 License
-
-MIT License - feel free to use this project for learning or as a starter template.
-
----
-
-Built with ❤️ using React, Express, SQLite, and a lot of TypeScript.
